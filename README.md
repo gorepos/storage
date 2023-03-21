@@ -32,7 +32,6 @@ func main() {
     Age  int
   }
   
-  
   // save 
   storage.Put("some-key2", MyStruct {
     Name: "Elon Mask",
