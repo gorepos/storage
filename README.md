@@ -13,8 +13,19 @@ go get github.com/gorepos/storage
 
 import "github.com/gorepos/storage"
 
-
 func main() {
+  // save 
+  storage.Put("some-key1", "Hello World!")
+  
+  // restore 
+  var value string
+  storage.Get("some-key1", &value)
+}
+```
+
+### Save/Restore structs
+
+```Go
   // define some structure
   type MyStruct struct {
     Name string
@@ -31,5 +42,5 @@ func main() {
   // restore 
   var restoredValue MyStruct
   storage.Get("some-key1", &restoredValue)
-}
+
 ```
