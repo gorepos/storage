@@ -10,25 +10,25 @@ go get github.com/gorepos/storage
 ### Usage
 
 ```Go
+
 import "github.com/gorepos/storage"
+
+
 func main() {
-  
   // define some structure
   type MyStruct struct {
     Name string
     Age  int
   }
   
-  // create instance
-  var value = MyStruct {
+  
+  // save 
+  storage.Put("some-key1", MyStruct {
     Name: "Ilon Mask"
     Age: 25
-  }
+  })
   
-  // save struct
-  storage.Put("some-key1", value)
-  
-  // restore value
+  // restore 
   var restoredValue MyStruct
   storage.Get("some-key1", &restoredValue)
 }
