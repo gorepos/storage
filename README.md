@@ -44,3 +44,21 @@ func main() {
   storage.Get("some-key1", &restoredValue)
 
 ```
+
+### Save/Restore maps
+
+```Go
+  // define some map
+  var myMap = map[string]any{
+    "key1": 123,
+    "key2": "string value",
+  }
+
+  // save
+  storage.Put("some-key3", myMap)
+
+  // restore
+  var restoredMap map[string]any
+  storage.Get("some-key3", &restoredMap)
+
+```
