@@ -10,15 +10,17 @@ import (
 	"sync"
 )
 
+// Storage structure
 type Storage struct {
 	sync.RWMutex
 	dir string
 }
 
 var gStorage Storage = Storage{
-	dir: "storage",
+	dir: "storage", // default storage directory path
 }
 
+// SetDirectory - set storage directory path (relative or absolute)
 func SetDirectory(directory string) {
 	gStorage.SetDirectory(directory)
 }
@@ -70,6 +72,7 @@ func (s *Storage) Put(key string, value interface{}) error {
 	return nil
 }
 
+// Get - get value from the storage
 func (s *Storage) Get(key string, ref interface{}) error {
 	s.RLock()
 	defer s.RUnlock()
@@ -87,6 +90,7 @@ func (s *Storage) Get(key string, ref interface{}) error {
 	return nil
 }
 
+// Move - rename key
 func (s *Storage) Move(oldKey, newKey string) error {
 	s.Lock()
 	defer s.Unlock()
@@ -117,6 +121,7 @@ func (s *Storage) Move(oldKey, newKey string) error {
 	return nil
 }
 
+// Delete - delete key
 func (s *Storage) Delete(key string) error {
 	s.Lock()
 	defer s.Unlock()
@@ -175,6 +180,7 @@ func (s *Storage) Keys(prefix string) []string {
 	return result
 }
 
+// SetDirectory - set storage directory path (relative or absolute)
 func (s *Storage) SetDirectory(directory string) {
 	s.dir = directory
 }
