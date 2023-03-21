@@ -34,14 +34,14 @@ func main() {
   
   
   // save 
-  storage.Put("some-key1", MyStruct {
+  storage.Put("some-key2", MyStruct {
     Name: "Elon Mask",
     Age:  25,
   })
   
   // restore 
   var restoredValue MyStruct
-  storage.Get("some-key1", &restoredValue)
+  storage.Get("some-key2", &restoredValue)
 
 ```
 
