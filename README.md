@@ -24,8 +24,8 @@ func main() {
   
   // save 
   storage.Put("some-key1", MyStruct {
-    Name: "Ilon Mask"
-    Age: 25
+    Name: "Elon Mask",
+    Age:  25,
   })
   
   // restore 
