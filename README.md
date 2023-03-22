@@ -49,8 +49,8 @@ func main() {
 ```Go
   // define some map
   var myMap = map[string]any{
-    "key1": 123,
-    "key2": "string value",
+    "name": "Elon Mask",
+    "age": 25,
   }
 
   // save
