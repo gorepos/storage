@@ -4,7 +4,8 @@ Simple but awesome key-value file-based storage for Go (Golang). It allows to sa
 **Features:**
 
 - Each value is stored as seperated file (pretty-printed json)
-- Key may contain slashes ("/") for example `users/123/orders/new/0001` and that value will be saved to the corresponding path `<storage-dir>/users/123/orders/new/0001.json` 
+- Key may contain slashes ("/") for example `users/123/orders/new/0001` and that value will be saved to the corresponding path `<storage-dir>/users/123/orders/new/0001.json`
+- The ability to get a list of keys by prefix, for example `storage.Keys("users/123/orders/new")`
 
 ### Install
 
