@@ -115,3 +115,30 @@ func TestMultiple(t *testing.T) {
 	os.Remove("dir1")
 	os.Remove("dir2")
 }
+
+func TestForbiddenKeys(t *testing.T) {
+	RegisterTestingT(t)
+
+	badKeys := []string{
+		"./",
+		"./123",
+		"../",
+		"../123",
+
+		"/.",
+		"123/.",
+		"/..",
+		"123/..",
+
+		"/../",
+		"/./",
+		"a/./b",
+		"a/../b",
+	}
+
+	for _, key := range badKeys {
+		err := Put(key, "val")
+		Expect(err).Should(HaveOccurred())
+	}
+
+}
