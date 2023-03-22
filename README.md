@@ -74,3 +74,10 @@ func main() {
   storage.Move("old-key", "new-key")
 
 ```
+
+### Delete key
+
+```Go
+  storage.Delete("some-key")
+
+```
