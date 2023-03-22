@@ -81,3 +81,18 @@ func main() {
   storage.Delete("some-key")
 
 ```
+
+### Using multiple storages 
+
+```Go
+  storage1 := storage.Storage {}
+  storage2 := storage.Storage {}
+  
+  storage1.SetDirectory("dir1")
+  storage2.SetDirectory("dir2")
+  
+  storage1.Put("key", "Hello World!")
+  storage2.Put("key", "Hello Nether!")
+
+```
+
