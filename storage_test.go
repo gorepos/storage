@@ -92,3 +92,26 @@ func TestDelete(t *testing.T) {
 	err := os.Remove(gStorage.dir)
 	Expect(err).To(BeNil())
 }
+
+func TestMultiple(t *testing.T) {
+	RegisterTestingT(t)
+
+	storage1 := Storage{}
+	storage2 := Storage{}
+
+	storage1.SetDirectory("dir1")
+	storage2.SetDirectory("dir2")
+
+	err := storage1.Put("key", "Hello World!")
+	Expect(err).To(BeNil())
+	err = storage2.Put("key", "Hello Nether!")
+	Expect(err).To(BeNil())
+
+	err = storage1.Delete("key")
+	Expect(err).To(BeNil())
+	err = storage2.Delete("key")
+	Expect(err).To(BeNil())
+
+	os.Remove("dir1")
+	os.Remove("dir2")
+}

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -56,8 +57,11 @@ func (s *Storage) Put(key string, value interface{}) error {
 	s.Lock()
 	defer s.Unlock()
 
-	jsonFilePath := s.dir + "/" + key + ".json"
-	err := mkdirs(jsonFilePath)
+	jsonFilePath, err := s.keyToPath(key)
+	if err != nil {
+		return err
+	}
+	err = mkdirs(jsonFilePath)
 	if err != nil {
 		return err
 	}
@@ -77,7 +81,10 @@ func (s *Storage) Get(key string, ref interface{}) error {
 	s.RLock()
 	defer s.RUnlock()
 
-	jsonFilePath := s.dir + "/" + key + ".json"
+	jsonFilePath, err := s.keyToPath(key)
+	if err != nil {
+		return err
+	}
 	bytes, err := os.ReadFile(jsonFilePath)
 	if err != nil {
 		return err
@@ -95,9 +102,15 @@ func (s *Storage) Move(oldKey, newKey string) error {
 	s.Lock()
 	defer s.Unlock()
 
-	srcPath := s.dir + "/" + oldKey + ".json"
-	dstPath := s.dir + "/" + newKey + ".json"
-	err := mkdirs(dstPath)
+	srcPath, err := s.keyToPath(oldKey)
+	if err != nil {
+		return err
+	}
+	dstPath, err := s.keyToPath(newKey)
+	if err != nil {
+		return err
+	}
+	err = mkdirs(dstPath)
 	if err != nil {
 		return err
 	}
@@ -126,9 +139,12 @@ func (s *Storage) Delete(key string) error {
 	s.Lock()
 	defer s.Unlock()
 
-	jsonFilePath := s.dir + "/" + key + ".json"
+	jsonFilePath, err := s.keyToPath(key)
+	if err != nil {
+		return err
+	}
 	filepath.Dir(jsonFilePath)
-	err := os.Remove(jsonFilePath)
+	err = os.Remove(jsonFilePath)
 	if err != nil {
 		return err
 	}
@@ -183,6 +199,19 @@ func (s *Storage) Keys(prefix string) []string {
 // SetDirectory - set storage directory path (relative or absolute)
 func (s *Storage) SetDirectory(directory string) {
 	s.dir = directory
+}
+
+// keyToPath - Build filename path for given key
+func (s *Storage) keyToPath(key string) (string, error) {
+	if strings.HasPrefix(key, "../") ||
+		strings.HasPrefix(key, "./") ||
+		strings.HasSuffix(key, "/..") ||
+		strings.HasSuffix(key, "/.") ||
+		strings.Contains(key, "/../") ||
+		strings.Contains(key, "/./") {
+		return "", fmt.Errorf("path traversal not allowed. key: '%s'", key)
+	}
+	return s.dir + "/" + key + ".json", nil
 }
 
 // mkdirs - Create a directory (with necessary parents) for filename
