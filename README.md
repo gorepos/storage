@@ -67,3 +67,10 @@ func main() {
   storage.Get("some-key3", &restoredMap)
 
 ```
+
+### Rename key
+
+```Go
+  storage.Move("old-key", "new-key")
+
+```
