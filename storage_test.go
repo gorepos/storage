@@ -23,6 +23,13 @@ var testItems map[string]any = map[string]any{
 	},
 }
 
+func TestInit(t *testing.T) {
+	RegisterTestingT(t)
+	testStorageDir := "test_storage_dir"
+	os.RemoveAll(testStorageDir)
+	SetDirectory(testStorageDir)
+}
+
 func TestPut(t *testing.T) {
 	RegisterTestingT(t)
 	t.Logf("Initing storage..")
@@ -78,6 +85,15 @@ func TestMove(t *testing.T) {
 	}
 	Expect(len(Keys("orders/done"))).To(Equal(0))
 	Expect(len(Keys("orders/new"))).To(Equal(len(keys1)))
+}
+
+func TestSlashes(t *testing.T) {
+	RegisterTestingT(t)
+	Put("////", "123")
+	var loaded string
+	Get("", &loaded)
+	Expect(loaded).To(Equal("123"))
+	Delete("")
 }
 
 func TestDelete(t *testing.T) {
@@ -138,10 +154,8 @@ func TestForbiddenKeys(t *testing.T) {
 
 	for _, key := range badKeys {
 		err := Put(key, "val")
-		t.Logf("invalid key: %s", key)
 		if err != nil {
-			t.Logf("err: %s", err.Error())
-
+			t.Logf("checking key %-7s OK: \"%s\"", key, err.Error())
 		}
 		Expect(err).Should(HaveOccurred())
 	}
