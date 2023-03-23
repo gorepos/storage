@@ -203,15 +203,31 @@ func (s *Storage) SetDirectory(directory string) {
 
 // keyToPath - Build filename path for given key
 func (s *Storage) keyToPath(key string) (string, error) {
+	// check path traversal
 	if strings.HasPrefix(key, "../") ||
 		strings.HasPrefix(key, "./") ||
 		strings.HasSuffix(key, "/..") ||
 		strings.HasSuffix(key, "/.") ||
 		strings.Contains(key, "/../") ||
 		strings.Contains(key, "/./") {
-		return "", fmt.Errorf("path traversal not allowed. key: '%s'", key)
+		return "", fmt.Errorf("path traversal not allowed. Invalid key: '%s'", key)
 	}
-	return s.dir + "/" + key + ".json", nil
+	thePath := s.dir + "/" + key + ".json"
+
+	// another check: file must be *inside* the storage directory
+	absPath, err := filepath.Abs(thePath)
+	if err != nil {
+		return "", err
+	}
+	absStoragePath, err := filepath.Abs(s.dir)
+	if err != nil {
+		return "", err
+	}
+	if !strings.HasPrefix(absPath, absStoragePath) {
+		return "", fmt.Errorf("path is outside storage dir. Invalid key: '%s'", key)
+	}
+
+	return thePath, nil
 }
 
 // mkdirs - Create a directory (with necessary parents) for filename

@@ -138,6 +138,11 @@ func TestForbiddenKeys(t *testing.T) {
 
 	for _, key := range badKeys {
 		err := Put(key, "val")
+		t.Logf("invalid key: %s", key)
+		if err != nil {
+			t.Logf("err: %s", err.Error())
+
+		}
 		Expect(err).Should(HaveOccurred())
 	}
 
