@@ -168,6 +168,45 @@ func TestForbiddenKeys(t *testing.T) {
 
 }
 
+func TestOptions(t *testing.T) {
+	RegisterTestingT(t)
+
+	// new instance
+	s := NewStorage(Options{})
+	Expect(s.options.Dir).Should(Equal(gDefaultOptions.Dir))
+	Expect(s.options.Format).Should(Equal(gDefaultOptions.Format))
+	s.SetOptions(Options{
+		Dir:    "somedir",
+		Format: FORMAT_YAML,
+	})
+	Expect(s.options.Dir).Should(Equal("somedir"))
+	Expect(s.options.Format).Should(Equal(FORMAT_YAML))
+	s.SetOptions(Options{
+		Format: FORMAT_JSON,
+	})
+	Expect(s.options.Dir).Should(Equal("somedir"))
+	Expect(s.options.Format).Should(Equal(FORMAT_JSON))
+	s.SetOptions(Options{
+		Dir: "newdir",
+	})
+	Expect(s.options.Dir).Should(Equal("newdir"))
+	Expect(s.options.Format).Should(Equal(FORMAT_JSON))
+
+	// global
+	oldDir := gStorage.options.Dir
+	oldFmt := gStorage.options.Format
+	SetOptions(Options{Format: FORMAT_YAML})
+	Expect(gStorage.options.Format).Should(Equal(FORMAT_YAML))
+	SetOptions(Options{Dir: "newdir"})
+	Expect(gStorage.options.Dir).Should(Equal("newdir"))
+	Expect(gStorage.options.Format).Should(Equal(FORMAT_YAML))
+	SetOptions(Options{Format: FORMAT_JSON})
+	Expect(gStorage.options.Format).Should(Equal(FORMAT_JSON))
+	Expect(gStorage.options.Dir).Should(Equal("newdir"))
+	gStorage.options.Dir = oldDir
+	gStorage.options.Format = oldFmt
+}
+
 func BenchmarkStorage_Put(b *testing.B) {
 	//b.Logf("N: %d", b.N)
 	b.ResetTimer()

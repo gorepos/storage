@@ -41,6 +41,7 @@ var gStorage Storage = Storage{
 
 func NewStorage(options Options) *Storage {
 	storage := new(Storage)
+	storage.options = gDefaultOptions
 	storage.SetOptions(options)
 	return storage
 }
@@ -242,9 +243,8 @@ func (s *Storage) Keys(prefix string) []string {
 	return result
 }
 
-// SetOptions - set storage options
+// SetOptions - set storage options. Keeps empty options unchanged
 func (s *Storage) SetOptions(options Options) {
-	s.options = gDefaultOptions
 	if options.Dir != "" {
 		s.options.Dir = options.Dir
 	}
