@@ -23,13 +23,16 @@ var testItems map[string]any = map[string]any{
 		"key3": "8888",
 		"key4": []string{"one", "two", "three"},
 	},
+	"multiline": "line one\nline two\n    line three indented\nline four cyrillic Кирилица\n\n",
 }
 
 func TestInit(t *testing.T) {
 	RegisterTestingT(t)
 	testStorageDir := "test_storage_dir"
 	os.RemoveAll(testStorageDir)
-	SetDirectory(testStorageDir)
+	SetOptions(Options{
+		Dir: testStorageDir,
+	})
 }
 
 func TestPut(t *testing.T) {
@@ -106,19 +109,20 @@ func TestDelete(t *testing.T) {
 		Expect(err).To(BeNil())
 	}
 	Expect(len(Keys(""))).To(Equal(0))
-	Expect(isEmpty(gStorage.dir)).To(BeTrue())
-	err := os.Remove(gStorage.dir)
+	Expect(isEmpty(gStorage.options.Dir)).To(BeTrue())
+	err := os.Remove(gStorage.options.Dir)
 	Expect(err).To(BeNil())
 }
 
 func TestMultiple(t *testing.T) {
 	RegisterTestingT(t)
 
-	storage1 := Storage{}
-	storage2 := Storage{}
-
-	storage1.SetDirectory("dir1")
-	storage2.SetDirectory("dir2")
+	storage1 := NewStorage(Options{
+		Dir: "dir1",
+	})
+	storage2 := NewStorage(Options{
+		Dir: "dir2",
+	})
 
 	err := storage1.Put("key", "Hello World!")
 	Expect(err).To(BeNil())
@@ -171,7 +175,7 @@ func BenchmarkStorage_Put(b *testing.B) {
 		Put(strconv.Itoa(i), "123")
 	}
 	b.StopTimer()
-	os.RemoveAll(gStorage.dir)
+	os.RemoveAll(gStorage.options.Dir)
 }
 
 func BenchmarkStorage_Put_Splitted(b *testing.B) {
@@ -181,7 +185,7 @@ func BenchmarkStorage_Put_Splitted(b *testing.B) {
 		Put(key, "123")
 	}
 	b.StopTimer()
-	os.RemoveAll(gStorage.dir)
+	os.RemoveAll(gStorage.options.Dir)
 }
 
 func BenchmarkStorage_Get(b *testing.B) {
@@ -194,7 +198,7 @@ func BenchmarkStorage_Get(b *testing.B) {
 		Get(strconv.Itoa(i), &val)
 	}
 	b.StopTimer()
-	os.RemoveAll(gStorage.dir)
+	os.RemoveAll(gStorage.options.Dir)
 }
 
 func BenchmarkStorage_Get_Splitted(b *testing.B) {
@@ -209,7 +213,7 @@ func BenchmarkStorage_Get_Splitted(b *testing.B) {
 		Get(key, &val)
 	}
 	b.StopTimer()
-	os.RemoveAll(gStorage.dir)
+	os.RemoveAll(gStorage.options.Dir)
 }
 
 func BenchmarkStorage_Move(b *testing.B) {
@@ -221,7 +225,7 @@ func BenchmarkStorage_Move(b *testing.B) {
 		Move(strconv.Itoa(i), strconv.Itoa(i)+"_")
 	}
 	b.StopTimer()
-	os.RemoveAll(gStorage.dir)
+	os.RemoveAll(gStorage.options.Dir)
 }
 
 func BenchmarkStorage_Delete(b *testing.B) {
@@ -233,5 +237,5 @@ func BenchmarkStorage_Delete(b *testing.B) {
 		Delete(strconv.Itoa(i))
 	}
 	b.StopTimer()
-	os.RemoveAll(gStorage.dir)
+	os.RemoveAll(gStorage.options.Dir)
 }

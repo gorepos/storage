@@ -3,6 +3,7 @@ package storage
 import (
 	"encoding/json"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"io"
 	"log"
 	"os"
@@ -11,19 +12,42 @@ import (
 	"sync"
 )
 
+type Format string
+
+const FORMAT_JSON Format = "json"
+const FORMAT_YAML Format = "yaml"
+
+type Options struct {
+	Dir    string
+	Format Format
+}
+
 // Storage structure
 type Storage struct {
 	sync.RWMutex
-	dir string
+	options Options
 }
 
+var gDefaultOptions = Options{
+	Dir:    "storage",
+	Format: FORMAT_JSON,
+}
+
+// Default storage instance
 var gStorage Storage = Storage{
-	dir: "storage", // default storage directory path
+	// default options
+	options: gDefaultOptions,
 }
 
-// SetDirectory - set storage directory path (relative or absolute)
-func SetDirectory(directory string) {
-	gStorage.SetDirectory(directory)
+func NewStorage(options Options) *Storage {
+	storage := new(Storage)
+	storage.SetOptions(options)
+	return storage
+}
+
+// SetOptions - set storage directory path (relative or absolute)
+func SetOptions(options Options) {
+	gStorage.SetOptions(options)
 }
 
 // Put - write value to the storage
@@ -65,7 +89,19 @@ func (s *Storage) Put(key string, value interface{}) error {
 	if err != nil {
 		return err
 	}
-	bytes, err := json.MarshalIndent(value, "", "  ")
+
+	var bytes []byte
+
+	// serialize
+	switch s.options.Format {
+	case FORMAT_JSON:
+		bytes, err = json.MarshalIndent(value, "", "  ")
+	case FORMAT_YAML:
+		bytes, err = yaml.Marshal(value)
+	default:
+		return fmt.Errorf("unknown format '%s'", s.options.Format)
+	}
+
 	if err != nil {
 		return err
 	}
@@ -89,7 +125,17 @@ func (s *Storage) Get(key string, ref interface{}) error {
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(bytes, ref)
+
+	// deserialize
+	switch s.options.Format {
+	case FORMAT_JSON:
+		err = json.Unmarshal(bytes, ref)
+	case FORMAT_YAML:
+		err = yaml.Unmarshal(bytes, ref)
+	default:
+		return fmt.Errorf("unknown format '%s'", s.options.Format)
+	}
+
 	if err != nil {
 		return err
 	}
@@ -123,7 +169,7 @@ func (s *Storage) Move(oldKey, newKey string) error {
 	// recursively remove empty directories
 	parts := strings.Split(oldKey, "/")
 	for i := len(parts); i > 0; i-- {
-		dirPath := s.dir + "/" + strings.Join(parts[:i], "/")
+		dirPath := s.options.Dir + "/" + strings.Join(parts[:i], "/")
 		if empty, _ := isEmpty(dirPath); empty {
 			err := os.Remove(dirPath)
 			if err != nil {
@@ -152,7 +198,7 @@ func (s *Storage) Delete(key string) error {
 	// recursively remove empty directories
 	parts := strings.Split(key, "/")
 	for i := len(parts); i > 0; i-- {
-		dirPath := s.dir + "/" + strings.Join(parts[:i], "/")
+		dirPath := s.options.Dir + "/" + strings.Join(parts[:i], "/")
 		if empty, _ := isEmpty(dirPath); empty {
 			err := os.Remove(dirPath)
 			if err != nil {
@@ -171,7 +217,7 @@ func (s *Storage) Keys(prefix string) []string {
 	defer s.RUnlock()
 
 	var result []string
-	err := filepath.Walk(s.dir,
+	err := filepath.Walk(s.options.Dir,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -182,7 +228,7 @@ func (s *Storage) Keys(prefix string) []string {
 			if !strings.HasSuffix(path, ".json") {
 				return nil
 			}
-			relpath, err := filepath.Rel(s.dir, path)
+			relpath, err := filepath.Rel(s.options.Dir, path)
 
 			key := strings.TrimSuffix(relpath, ".json")
 			if strings.HasPrefix(key, prefix) {
@@ -196,9 +242,15 @@ func (s *Storage) Keys(prefix string) []string {
 	return result
 }
 
-// SetDirectory - set storage directory path (relative or absolute)
-func (s *Storage) SetDirectory(directory string) {
-	s.dir = directory
+// SetOptions - set storage options
+func (s *Storage) SetOptions(options Options) {
+	s.options = gDefaultOptions
+	if options.Dir != "" {
+		s.options.Dir = options.Dir
+	}
+	if options.Format != "" {
+		s.options.Format = options.Format
+	}
 }
 
 // keyToPath - Build filename path for given key
@@ -212,14 +264,14 @@ func (s *Storage) keyToPath(key string) (string, error) {
 		strings.Contains(key, "/./") {
 		return "", fmt.Errorf("path traversal not allowed. Invalid key: '%s'", key)
 	}
-	thePath := s.dir + "/" + key + ".json"
+	thePath := s.options.Dir + "/" + key + ".json"
 
 	// another check: file must be *inside* the storage directory
 	absPath, err := filepath.Abs(thePath)
 	if err != nil {
 		return "", err
 	}
-	absStoragePath, err := filepath.Abs(s.dir)
+	absStoragePath, err := filepath.Abs(s.options.Dir)
 	if err != nil {
 		return "", err
 	}
