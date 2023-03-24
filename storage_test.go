@@ -3,6 +3,8 @@ package storage
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 	"testing"
 )
 import . "github.com/onsi/gomega"
@@ -160,4 +162,76 @@ func TestForbiddenKeys(t *testing.T) {
 		Expect(err).Should(HaveOccurred())
 	}
 
+}
+
+func BenchmarkStorage_Put(b *testing.B) {
+	//b.Logf("N: %d", b.N)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Put(strconv.Itoa(i), "123")
+	}
+	b.StopTimer()
+	os.RemoveAll(gStorage.dir)
+}
+
+func BenchmarkStorage_Put_Splitted(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		key := strings.Join(strings.Split(strconv.Itoa(i), ""), "/")
+		Put(key, "123")
+	}
+	b.StopTimer()
+	os.RemoveAll(gStorage.dir)
+}
+
+func BenchmarkStorage_Get(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Put(strconv.Itoa(i), "123")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var val string
+		Get(strconv.Itoa(i), &val)
+	}
+	b.StopTimer()
+	os.RemoveAll(gStorage.dir)
+}
+
+func BenchmarkStorage_Get_Splitted(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		key := strings.Join(strings.Split(strconv.Itoa(i), ""), "/")
+		Put(key, "123")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		key := strings.Join(strings.Split(strconv.Itoa(i), ""), "/")
+		var val string
+		Get(key, &val)
+	}
+	b.StopTimer()
+	os.RemoveAll(gStorage.dir)
+}
+
+func BenchmarkStorage_Move(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Put(strconv.Itoa(i), "123")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Move(strconv.Itoa(i), strconv.Itoa(i)+"_")
+	}
+	b.StopTimer()
+	os.RemoveAll(gStorage.dir)
+}
+
+func BenchmarkStorage_Delete(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Put(strconv.Itoa(i), "123")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Delete(strconv.Itoa(i))
+	}
+	b.StopTimer()
+	os.RemoveAll(gStorage.dir)
 }
