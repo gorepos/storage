@@ -85,12 +85,12 @@ func main() {
 ### Using multiple storages 
 
 ```Go
-	storage1 := storage.NewStorage(storage.Options{
-        Dir: "dir1",
-    })
-    storage2 := storage.NewStorage(storage.Options{
-        Dir: "dir2",
-    })
+  storage1 := storage.NewStorage(storage.Options{
+    Dir: "dir1",
+  })
+  storage2 := storage.NewStorage(storage.Options{
+    Dir: "dir2",
+  })
   
   
   storage1.Put("key", "Hello World!")
