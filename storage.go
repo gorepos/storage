@@ -3,7 +3,6 @@ package storage
 import (
 	"encoding/json"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"io"
 	"log"
 	"os"
@@ -14,12 +13,8 @@ import (
 
 type Format string
 
-const FORMAT_JSON Format = "json"
-const FORMAT_YAML Format = "yaml"
-
 type Options struct {
-	Dir    string
-	Format Format
+	Dir string
 }
 
 // Storage structure
@@ -29,8 +24,7 @@ type Storage struct {
 }
 
 var gDefaultOptions = Options{
-	Dir:    "storage",
-	Format: FORMAT_JSON,
+	Dir: "storage",
 }
 
 // Default storage instance
@@ -94,14 +88,7 @@ func (s *Storage) Put(key string, value interface{}) error {
 	var bytes []byte
 
 	// serialize
-	switch s.options.Format {
-	case FORMAT_JSON:
-		bytes, err = json.MarshalIndent(value, "", "  ")
-	case FORMAT_YAML:
-		bytes, err = yaml.Marshal(value)
-	default:
-		return fmt.Errorf("unknown format '%s'", s.options.Format)
-	}
+	bytes, err = json.MarshalIndent(value, "", "  ")
 
 	if err != nil {
 		return err
@@ -128,14 +115,7 @@ func (s *Storage) Get(key string, ref interface{}) error {
 	}
 
 	// deserialize
-	switch s.options.Format {
-	case FORMAT_JSON:
-		err = json.Unmarshal(bytes, ref)
-	case FORMAT_YAML:
-		err = yaml.Unmarshal(bytes, ref)
-	default:
-		return fmt.Errorf("unknown format '%s'", s.options.Format)
-	}
+	err = json.Unmarshal(bytes, ref)
 
 	if err != nil {
 		return err
@@ -247,9 +227,6 @@ func (s *Storage) Keys(prefix string) []string {
 func (s *Storage) SetOptions(options Options) {
 	if options.Dir != "" {
 		s.options.Dir = options.Dir
-	}
-	if options.Format != "" {
-		s.options.Format = options.Format
 	}
 }
 
